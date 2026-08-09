@@ -1,0 +1,35 @@
+# Environment & Secrets
+.env
+.env.*
+*.pem
+*.key
+credentials
+aws_credentials
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraform.lock.hcl
+terraform.tfvars.secret
+
+# Python & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+
+# OS & IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
