@@ -1,4 +1,4 @@
-name: Deploy School Result Portal
+name: School Result Portal CI
 
 on:
   push:
@@ -6,48 +6,39 @@ on:
   pull_request:
     branches: [main]
 
-env:
-  AWS_REGION: eu-west-1
-  ECR_REPOSITORY: school-result-portal
-
 jobs:
-  build-and-deploy:
+  ci-checks:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::123456789012:role/GitHubActionsDeployRole
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Build, tag, and push image
-        id: build-image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f docker/Dockerfile .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.15.8"
 
-      - name: Terraform Init and plan
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Init (Without Backend)
+        run: terraform init -backend=false
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Dependencies & Check App Syntax
         run: |
-          terraform init
-          terraform workspace select prod || terraform workspace new prod
-          terraform plan -var="app_image=${{ steps.build-image.outputs.image }}"
+          python -m pip install --upgrade pip
+          pip install -r app/requirements.txt
+          python -m py_compile app/app.py
+
+      - name: Test Docker Build
+        run: |
+          docker build -t school-result-portal:test -f docker/Dockerfile .

@@ -66,10 +66,10 @@ resource "aws_ecs_task_definition" "app" {
 
   container_definitions = jsonencode([
     {
-      name  = "app"
-      image = var.app_image
+      name      = "app"
+      image     = var.app_image
       essential = true
-      
+
       portMappings = [
         {
           containerPort = 8080

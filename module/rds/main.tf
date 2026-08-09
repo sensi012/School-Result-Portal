@@ -31,13 +31,13 @@ resource "aws_db_subnet_group" "main" {
 }
 
 resource "aws_db_instance" "main" {
-  identifier             = "${var.project_name}-${var.environment}"
-  engine                 = "postgres"
-  instance_class         = "db.t3.micro"
-  allocated_storage      = 20
-  max_allocated_storage  = 100
-  storage_type           = "gp3"
-  storage_encrypted      = true
+  identifier            = "${var.project_name}-${var.environment}"
+  engine                = "postgres"
+  instance_class        = "db.t3.micro"
+  allocated_storage     = 20
+  max_allocated_storage = 100
+  storage_type          = "gp3"
+  storage_encrypted     = true
 
   db_name  = "school_db"
   username = var.db_username
@@ -46,15 +46,15 @@ resource "aws_db_instance" "main" {
   vpc_security_group_ids = [aws_security_group.rds.id]
   db_subnet_group_name   = aws_db_subnet_group.main.name
 
-  multi_az               = var.environment == "prod" ? true : false
-  publicly_accessible    = false
-  skip_final_snapshot    = var.environment == "prod" ? false : true
+  multi_az                  = var.environment == "prod" ? true : false
+  publicly_accessible       = false
+  skip_final_snapshot       = var.environment == "prod" ? false : true
   final_snapshot_identifier = var.environment == "prod" ? "${var.project_name}-${var.environment}-final" : null
-  backup_retention_period = var.environment == "prod" ? 7 : 1
+  backup_retention_period   = var.environment == "prod" ? 7 : 1
 
   performance_insights_enabled = true
-  monitoring_interval    = 60
-  monitoring_role_arn    = aws_iam_role.rds_monitoring.arn
+  monitoring_interval          = 60
+  monitoring_role_arn          = aws_iam_role.rds_monitoring.arn
 
   tags = {
     Name = "${var.project_name}-${var.environment}-postgres"
