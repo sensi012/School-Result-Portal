@@ -6,7 +6,7 @@
 credentials
 aws_credentials
 terraform.tfvars
-
+.terraform.lock.hcl
 # Terraform
 .terraform/
 *.tfstate
