@@ -152,14 +152,7 @@ cd School-Result-Portal
 
 ### 2. Initialize Terraform Backend (One-Time)
 ```bash
-aws s3 mb s3://school-portal-terraform-state-nigeria --region eu-west-1
-
-aws dynamodb create-table \
-  --table-name terraform-state-lock \
-  --attribute-definitions AttributeName=LockID,AttributeType=S \
-  --key-schema AttributeName=LockID,KeyType=HASH \
-  --billing-mode PAY_PER_REQUEST \
-  --region eu-west-1
+bash backend.sh or ./backend.sh
 ```
 
 ### 3. Build & Push Docker Image

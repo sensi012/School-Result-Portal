@@ -19,9 +19,3 @@ aws s3api put-bucket-versioning \
   --bucket school-portal-terraform-state-nigeria \
   --versioning-configuration Status=Enabled \
   --region eu-west-1
-
-# 4. Enable default Server-Side Encryption (SSE-S3)
-aws s3api put-bucket-encryption \
-  --bucket school-portal-terraform-state-nigeria \
-  --server-side-encryption-configuration '{"Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]}' \
-  --region eu-west-1
