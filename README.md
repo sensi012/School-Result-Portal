@@ -57,7 +57,7 @@ A containerized Flask web application deployed on **AWS ECS Fargate** (serverles
 | **HTTPS Only** | Application Load Balancer with SSL termination |
 | **Auto-Scaling** | CPU-based scaling 2→4 tasks during exam season |
 | **IaC** | 100% Terraform — reproducible across environments |
-| **CI/CD** | GitHub Actions for automated build & deploy |
+| **CI/CD** | GitHub Actions for automated build & syntax validation |
 
 ---
 
@@ -65,7 +65,7 @@ A containerized Flask web application deployed on **AWS ECS Fargate** (serverles
 
 ### Data Flow
 
-```
+```text
 Student/Parent → Route 53 → CloudFront (CDN) → ALB (HTTPS)
                                           ↓
                               ECS Fargate (Flask App in Private Subnet)
@@ -104,9 +104,9 @@ Student/Parent → Route 53 → CloudFront (CDN) → ALB (HTTPS)
 - **AWS Secrets Manager** — Credential rotation (production hardening)
 
 ### DevOps Layer
-- **Terraform 1.7+** — Infrastructure as Code
+- **Terraform 1.5+** — Infrastructure as Code
 - **Docker** — Container build and packaging
-- **GitHub Actions** — CI/CD automation
+- **GitHub Actions** — CI validation automation
 - **AWS CLI** — Cloud resource management
 
 ---
@@ -146,8 +146,8 @@ Student/Parent → Route 53 → CloudFront (CDN) → ALB (HTTPS)
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/your-org/school-result-portal.git
-cd school-result-portal
+git clone https://github.com/sensi012/School-Result-Portal.git
+cd School-Result-Portal
 ```
 
 ### 2. Initialize Terraform Backend (One-Time)
@@ -179,11 +179,10 @@ docker push 210450948229.dkr.ecr.eu-west-1.amazonaws.com/school-result-portal:la
 
 ### 4. Deploy Infrastructure
 ```bash
-cd infra
 terraform init
 terraform workspace new prod || terraform workspace select prod
-terraform plan -var-file=environments/prod/terraform.tfvars
-terraform apply -var-file=environments/prod/terraform.tfvars
+terraform plan
+terraform apply
 ```
 
 ### 5. Access the Application
@@ -196,8 +195,9 @@ open http://$(terraform output -raw load_balancer_dns)
 ```
 
 **Test Credentials:**
-- list.md
-
+Use credentials from [list.md](list.md). For example:
+- **Matric Number**: `AIC/JSS1/001`
+- **PIN**: `100001`
 
 ---
 
@@ -229,7 +229,7 @@ pip install -r requirements.txt
 export DB_HOST=localhost
 export DB_NAME=school_db
 export DB_USER=admin
-export DB_PASSWORD=devpassword123
+export DB_PASSWORD=password  # 'password' is the default in app.py
 export DB_PORT=5432
 export SECRET_KEY=dev-secret-key
 
@@ -251,19 +251,17 @@ We use **Terraform workspaces** to isolate environments:
 
 ### Deployment Commands
 ```bash
-cd infra
-
 # Select environment
 terraform workspace select prod
 
 # Plan changes
-terraform plan -var-file=environments/prod/terraform.tfvars
+terraform plan
 
 # Apply changes
-terraform apply -var-file=environments/prod/terraform.tfvars
+terraform apply
 
 # Destroy (use with caution)
-terraform destroy -var-file=environments/prod/terraform.tfvars
+terraform destroy
 ```
 
 ---
@@ -287,10 +285,10 @@ environment  = "prod"
 project_name = "school-result-portal"
 app_image    = "210450948229.dkr.ecr.eu-west-1.amazonaws.com/school-result-portal:latest"
 db_username  = "school_admin"
-db_password  = "YourStrongPassword123!"
+db_password  = "SChoolPortalPassword123!"
 ```
 
-> ⚠️ **Never commit `terraform.tfvars` to Git.** Use `.gitignore` and store secrets in AWS Secrets Manager for production.
+> ⚠️ **Never commit `terraform.tfvars` to Git.** Use `.gitignore` and store secrets securely.
 
 ---
 
@@ -365,10 +363,9 @@ resource "aws_appautoscaling_scheduled_action" "scale_up" {
 
 ## 📁 Project Structure
 
-```
+```text
 school-result-portal/
 ├── 📄 README.md                          # This file
-├── 📄 Makefile                           # Common automation commands
 ├── 📄 .gitignore                         # Git ignore rules
 │
 ├── 🐳 docker/                            # Container configuration
@@ -384,40 +381,35 @@ school-result-portal/
 │   │   └── result.html                   # Result slip display
 │   └── static/                           # CSS, JS, images (if any)
 │
-├── 🏗️ infra/                             # Terraform Infrastructure
+├── 🏗️ .                                  # Terraform Infrastructure (root)
 │   ├── backend.tf                        # S3 remote state configuration
-│   ├── provider.tf                       # AWS provider & version pinning
-│   ├── variables.tf                      # Input variable declarations
-│   ├── outputs.tf                        # Output values
+│   ├── providers.tf                      # AWS provider & version pinning
+│   ├── variable.tf                       # Input variable declarations
+│   ├── output.tf                         # Output values
 │   ├── main.tf                           # Root module composition
+│   ├── terraform.tfvars                  # Variables override for deployment
 │   │
-│   ├── environments/                     # Per-environment configs
-│   │   ├── dev/
-│   │   │   └── terraform.tfvars
-│   │   └── prod/
-│   │       └── terraform.tfvars
-│   │
-│   └── modules/                          # Reusable infrastructure modules
+│   └── module/                           # Reusable infrastructure modules
 │       ├── vpc/                          # Network (VPC, subnets, IGW, NAT)
 │       │   ├── main.tf
-│       │   ├── variables.tf
-│       │   └── outputs.tf
+│       │   ├── variable.tf
+│       │   └── output.tf
 │       ├── ecs/                          # Container orchestration
 │       │   ├── main.tf
-│       │   ├── variables.tf
-│       │   └── outputs.tf
+│       │   ├── variable.tf
+│       │   └── output.tf
 │       ├── rds/                          # Managed database
 │       │   ├── main.tf
-│       │   ├── variables.tf
-│       │   └── outputs.tf
+│       │   ├── variable.tf
+│       │   └── output.tf
 │       └── alb/                          # Load balancing & SSL
 │           ├── main.tf
-│           ├── variables.tf
-│           └── outputs.tf
+│           ├── variable.tf
+│           └── output.tf
 │
 └── ⚙️ .github/
     └── workflows/
-        └── deploy.yml                    # GitHub Actions CI/CD pipeline
+        └── ci.yml                        # GitHub Actions CI pipeline
 ```
 
 ---
@@ -425,21 +417,14 @@ school-result-portal/
 ## 🔄 CI/CD Pipeline
 
 ### GitHub Actions Workflow
-On every push to `main`:
+On every push and pull request to `main`, the CI workflow (`.github/workflows/ci.yml`) runs validations without requiring secrets or AWS access:
 
-1. **Lint** — Terraform `fmt` + `validate`
-2. **Build** — Docker image build with commit SHA tag
-3. **Scan** — Trivy container vulnerability scan
-4. **Push** — ECR image push
-5. **Deploy** — Terraform apply to production
+1. **Format Check** — Terraform `fmt -check`
+2. **Init & Validate** — Terraform `init -backend=false` and `validate`
+3. **Syntax Check** — Python `py_compile` to validate `app.py`
+4. **Build Test** — Docker image build to ensure the `Dockerfile` works correctly
 
-See `.github/workflows/deploy.yml` for full configuration.
-
-### Manual Deployment
-```bash
-# Trigger from GitHub UI or CLI
-gh workflow run deploy.yml
-```
+Deployments are executed manually via Terraform from the root directory after CI passes.
 
 ---
 
@@ -497,5 +482,3 @@ Please ensure:
 ## 📜 License
 
 This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
-
----
