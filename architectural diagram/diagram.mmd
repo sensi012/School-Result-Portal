@@ -1,0 +1,45 @@
+flowchart TB
+    classDef aws fill:#FF9900,stroke:#232F3E,stroke-width:2px,color:black;
+    classDef vpc fill:#00A4A6,stroke:#232F3E,stroke-width:2px,color:white;
+    classDef pub fill:#248814,stroke:#232F3E,stroke-width:2px,color:white;
+    classDef priv fill:#145888,stroke:#232F3E,stroke-width:2px,color:white;
+    classDef svc fill:#FFFFFF,stroke:#232F3E,stroke-width:2px,color:#232F3E;
+    
+    User((Users)) --> IGW
+    
+    subgraph AWS ["AWS Cloud"]
+        IGW[Internet Gateway]:::aws
+        
+        subgraph VPC ["AWS VPC (10.0.0.0/16)"]
+            IGW --> ALB
+            
+            subgraph Public ["Public Subnets"]
+                ALB[Application Load Balancer]:::svc
+                NAT[NAT Gateway]:::svc
+            end
+            
+            subgraph Private ["Private Subnets"]
+                ECS[ECS Fargate Flask App]:::svc
+                RDS[(RDS PostgreSQL Multi-AZ)]:::svc
+                
+                ALB --> |Port 5000| ECS
+                ECS --> |Port 5432| RDS
+            end
+            
+            ECS -.-> |Outbound| NAT
+            NAT -.-> IGW
+        end
+        
+        ECR[Elastic Container Registry]:::svc
+        CW[CloudWatch Logs]:::svc
+        S3[S3 Bucket - ALB Logs]:::svc
+        
+        IGW -.-> ECR
+        IGW -.-> CW
+        ALB -.-> |Access Logs| S3
+    end
+    
+    style AWS fill:#F9F9F9,stroke:#FF9900,stroke-width:2px,color:#333
+    style VPC fill:#F3F3F3,stroke:#00A4A6,stroke-width:2px,color:#333
+    style Public fill:#E8F5E9,stroke:#248814,stroke-width:2px,color:#333
+    style Private fill:#E3F2FD,stroke:#145888,stroke-width:2px,color:#333
