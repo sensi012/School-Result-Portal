@@ -67,6 +67,7 @@ variable "domain_name" {
 variable "github_repo" {
   description = "GitHub repository in the format owner/repo for OIDC trust"
   type        = string
+  default     = "sensi012/School-Result-Portal"
 }
 
 variable "create_oidc_provider" {
