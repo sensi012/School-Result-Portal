@@ -515,7 +515,3 @@ Key architectural and feature enhancements planned for production-readiness:
 - **Multi-Environment Promotion**: Staging-to-production promotion pipelines with environment protection rules.
 
 ---
-
-## 📜 License
-
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
