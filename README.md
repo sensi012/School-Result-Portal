@@ -5,13 +5,17 @@
 [![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)](https://docker.com)
 [![Flask](https://img.shields.io/badge/Flask-000000?logo=flask&logoColor=white)](https://flask.palletsprojects.com)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)](https://postgresql.org)
+[![Loom](https://img.shields.io/badge/Loom-Video_Demo-625DF5?logo=loom&logoColor=white)](https://www.loom.com/share/523d0f7c42524715a275f3401d02b19e)
 
 > **A cloud-native, Infrastructure-as-Code solution for Nigerian schools to securely publish and manage student academic results online.**
+>
+> 🎥 **Video Demo & Walkthrough**: [Watch on Loom](https://www.loom.com/share/523d0f7c42524715a275f3401d02b19e)
 
 ---
 
 ## 📋 Table of Contents
 
+- [Video Demo](#-video-demo)
 - [Problem Context](#-problem-context)
 - [Solution Overview](#-solution-overview)
 - [Architecture](#-architecture)
@@ -29,7 +33,14 @@
 - [Monitoring & Observability](#-monitoring--observability)
 - [Troubleshooting](#-troubleshooting)
 - [Future Improvements](#-future-improvements)
-- [License](#-license)
+
+---
+
+## 🎥 Video Demo
+
+Watch a walkthrough and architecture demonstration of the School Result Portal on Loom:
+
+👉 **[Watch the Demo on Loom](https://www.loom.com/share/523d0f7c42524715a275f3401d02b19e)**
 
 ---
 
