@@ -46,10 +46,10 @@ resource "aws_db_instance" "main" {
   vpc_security_group_ids = [aws_security_group.rds.id]
   db_subnet_group_name   = aws_db_subnet_group.main.name
 
-  multi_az                  = var.environment == "prod" ? true : false
-  publicly_accessible       = false
-  skip_final_snapshot       = true
-  backup_retention_period   = var.environment == "prod" ? 7 : 1
+  multi_az                = var.environment == "prod" ? true : false
+  publicly_accessible     = false
+  skip_final_snapshot     = true
+  backup_retention_period = var.environment == "prod" ? 7 : 1
 
   performance_insights_enabled = true
   monitoring_interval          = 60
