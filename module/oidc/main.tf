@@ -82,22 +82,12 @@ resource "aws_iam_policy" "github_actions_infrastructure" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
-      # ECR: Image building, pushing, and pulling
+      # ECR: Repository management, image building, pushing, and pulling
       {
         Sid    = "ECRAccess"
         Effect = "Allow"
         Action = [
-          "ecr:GetAuthorizationToken",
-          "ecr:BatchCheckLayerAvailability",
-          "ecr:GetDownloadUrlForLayer",
-          "ecr:BatchGetImage",
-          "ecr:PutImage",
-          "ecr:InitiateLayerUpload",
-          "ecr:UploadLayerPart",
-          "ecr:CompleteLayerUpload",
-          "ecr:DescribeRepositories",
-          "ecr:ListImages",
-          "ecr:DescribeImages"
+          "ecr:*"
         ]
         Resource = "*"
       },
