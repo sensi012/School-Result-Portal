@@ -28,7 +28,7 @@
 - [CI/CD Pipeline](#-cicd-pipeline)
 - [Monitoring & Observability](#-monitoring--observability)
 - [Troubleshooting](#-troubleshooting)
-- [Contributing](#-contributing)
+- [Future Improvements](#-future-improvements)
 - [License](#-license)
 
 ---
@@ -156,18 +156,27 @@ bash backend.sh or ./backend.sh
 ```
 
 ### 3. Build & Push Docker Image
+
+**Using the automated helper script (Recommended):**
 ```bash
-aws ecr create-repository --repository-name school-result-portal --region eu-west-1
+bash docker.sh
+# Or with custom parameters:
+AWS_REGION=eu-west-1 IMAGE_TAG=latest bash docker.sh
+```
+
+**Or manually via AWS CLI & Docker:**
+```bash
+AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
 aws ecr get-login-password --region eu-west-1 | \
-  docker login --username AWS --password-stdin 210450948229.dkr.ecr.eu-west-1.amazonaws.com
+  docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-1.amazonaws.com
 
 docker build -t school-result-portal:latest -f docker/Dockerfile .
 
 docker tag school-result-portal:latest \
-  210450948229.dkr.ecr.eu-west-1.amazonaws.com/school-result-portal:latest
+  ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-1.amazonaws.com/school-result-portal:latest
 
-docker push 210450948229.dkr.ecr.eu-west-1.amazonaws.com/school-result-portal:latest
+docker push ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-1.amazonaws.com/school-result-portal:latest
 ```
 
 ### 4. Deploy Infrastructure
@@ -477,6 +486,33 @@ Configure SNS + CloudWatch Alarms for:
 | `InvalidParameterCombination` for RDS | Deprecated engine version | Check valid versions with `aws rds describe-db-engine-versions` |
 | `503 Service Unavailable` | Health check failing | Verify `/health` endpoint returns HTTP 200 |
 | `Connection timeout` | NAT Gateway missing or misrouted | Verify private subnet route table points to NAT GW |
+
+---
+
+## 🚀 Future Improvements
+
+Key architectural and feature enhancements planned for production-readiness:
+
+### 1. 🛡️ Security Hardening
+- **AWS Secrets Manager / SSM Parameter Store**: Replace container environment variables with direct IAM-secured secrets injection in the ECS task definition.
+- **AWS WAF**: Attach a Web Application Firewall to the ALB with rate limiting, geo-restriction, and SQL Injection/XSS managed rules to block PIN brute-forcing.
+- **Custom Domain & Public ACM Certificate**: Map Route 53 with automated AWS Certificate Manager DNS validation for full HTTPS green-lock trust.
+
+### 2. 💰 Cost Optimization
+- **VPC Endpoints (PrivateLink)**: Eliminate the NAT Gateway ($35/mo savings) by using VPC endpoints for ECR, S3, and CloudWatch Logs.
+- **ECS Fargate Spot**: Slash container compute costs up to 70% during standard school terms.
+- **Scheduled RDS Pausing**: Automatically stop or scale down RDS instances during holiday vacations.
+
+### 3. 🎓 Application & User Experience
+- **Official PDF Result Slip Download**: Integrated `WeasyPrint`/`ReportLab` generation with official school watermark and stamp.
+- **SMS & WhatsApp Alerts**: Automated PIN and result release alerts to parents via SMS API (Termii/Twilio).
+- **Application-Level Rate Limiting**: `Flask-Limiter` throttling for failed PIN attempts.
+- **Database Connection Pooling**: `Flask-SQLAlchemy` and `PgBouncer` integration for peak concurrency handling.
+
+### 4. ⚙️ DevOps & CI/CD
+- **Automated Test Suite**: Integrated `pytest` unit and integration tests in the GitHub Actions workflow.
+- **Database Migrations**: Version-controlled schema migrations with `Alembic`/`Flask-Migrate`.
+- **Multi-Environment Promotion**: Staging-to-production promotion pipelines with environment protection rules.
 
 ---
 
