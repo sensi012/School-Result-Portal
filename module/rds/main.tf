@@ -48,8 +48,7 @@ resource "aws_db_instance" "main" {
 
   multi_az                  = var.environment == "prod" ? true : false
   publicly_accessible       = false
-  skip_final_snapshot       = var.environment == "prod" ? false : true
-  final_snapshot_identifier = var.environment == "prod" ? "${var.project_name}-${var.environment}-final" : null
+  skip_final_snapshot       = true
   backup_retention_period   = var.environment == "prod" ? 7 : 1
 
   performance_insights_enabled = true
