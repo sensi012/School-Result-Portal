@@ -1,3 +1,6 @@
+# Fetch official AWS ELB service account for current region
+data "aws_elb_service_account" "main" {}
+
 resource "aws_security_group" "alb" {
   name_prefix = "${var.project_name}-alb-"
   vpc_id      = var.vpc_id
@@ -42,14 +45,13 @@ resource "aws_lb" "main" {
     enabled = true
   }
 
-  # ✅ Ensure bucket policy exists before ALB tries to write logs
+  # Ensure bucket policy exists before ALB tries to write logs
   depends_on = [aws_s3_bucket_policy.logs]
 
   tags = {
     Name = "${var.project_name}-${var.environment}-alb"
   }
 }
-
 
 resource "aws_s3_bucket" "logs" {
   bucket = "${var.project_name}-${var.environment}-alb-logs-${random_id.bucket_suffix.hex}"
@@ -73,7 +75,7 @@ resource "aws_s3_bucket_public_access_block" "logs" {
   restrict_public_buckets = true
 }
 
-# Bucket policy - MUST use eu-west-1 ELB account ID: 156460612806
+# Bucket policy - uses dynamic ELB service account
 resource "aws_s3_bucket_policy" "logs" {
   bucket = aws_s3_bucket.logs.id
   policy = jsonencode({
@@ -83,7 +85,7 @@ resource "aws_s3_bucket_policy" "logs" {
         Sid    = "AllowELBLogging"
         Effect = "Allow"
         Principal = {
-          AWS = "arn:aws:iam::156460612806:root" # ✅ FIXED: eu-west-1 ELB account
+          AWS = data.aws_elb_service_account.main.arn
         }
         Action   = "s3:PutObject"
         Resource = "${aws_s3_bucket.logs.arn}/alb-logs/*"

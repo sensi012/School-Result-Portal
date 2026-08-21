@@ -33,13 +33,13 @@ resource "aws_db_subnet_group" "main" {
 resource "aws_db_instance" "main" {
   identifier            = "${var.project_name}-${var.environment}"
   engine                = "postgres"
-  instance_class        = "db.t3.micro"
-  allocated_storage     = 20
-  max_allocated_storage = 100
+  instance_class        = var.instance_class
+  allocated_storage     = var.allocated_storage
+  max_allocated_storage = var.max_allocated_storage
   storage_type          = "gp3"
   storage_encrypted     = true
 
-  db_name  = "school_db"
+  db_name  = var.db_name
   username = var.db_username
   password = var.db_password
 

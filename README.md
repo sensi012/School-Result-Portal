@@ -395,29 +395,50 @@ school-result-portal/
 │       │   ├── main.tf
 │       │   ├── variable.tf
 │       │   └── output.tf
-│       └── alb/                          # Load balancing & SSL
+│       ├── alb/                          # Load balancing & SSL
+│       │   ├── main.tf
+│       │   ├── variable.tf
+│       │   └── output.tf
+│       └── oidc/                         # AWS OIDC & IAM Role for GitHub Actions
 │           ├── main.tf
 │           ├── variable.tf
 │           └── output.tf
 │
 └── ⚙️ .github/
     └── workflows/
-        └── ci.yml                        # GitHub Actions CI pipeline
+        └── deploy.yml                    # GitHub Actions CI/CD pipeline (AWS OIDC)
 ```
 
 ---
 
 ## 🔄 CI/CD Pipeline
 
-### GitHub Actions Workflow
-On every push and pull request to `main`, the CI workflow (`.github/workflows/ci.yml`) runs validations without requiring secrets or AWS access:
+### GitHub Actions Workflow with AWS OIDC
+The workflow (`.github/workflows/deploy.yml`) uses passwordless **AWS OpenID Connect (OIDC)** authentication:
 
-1. **Format Check** — Terraform `fmt -check`
-2. **Init & Validate** — Terraform `init -backend=false` and `validate`
-3. **Syntax Check** — Python `py_compile` to validate `app.py`
-4. **Build Test** — Docker image build to ensure the `Dockerfile` works correctly
+1. **Continuous Integration (`ci-checks`)** (Runs on Push & PR to `main`):
+   - **Format Check** — Terraform `fmt -check -recursive`
+   - **Init & Validate** — Terraform `init -backend=false` and `validate`
+   - **Syntax Check** — Python `py_compile` to validate `app.py`
+   - **Build Test** — Docker image build to ensure `docker/Dockerfile` builds cleanly
 
-Deployments are executed manually via Terraform from the root directory after CI passes.
+2. **Continuous Deployment (`deploy`)** (Runs on Push to `main` and `workflow_dispatch`):
+   - **OIDC Authentication** — Assumes IAM Role via `aws-actions/configure-aws-credentials@v4` using short-lived tokens (no long-lived AWS keys needed)
+   - **ECR Login & Push** — Authenticates to Amazon ECR, builds production image, and pushes with commit SHA and `latest` tags
+   - **Terraform Plan & Apply** — Automatically initializes S3 state backend and applies infrastructure updates
+   - **ECS Service Redeployment** — Triggers ECS rolling update and waits for service stability
+
+### Required GitHub Repository Secrets & Variables
+
+To enable automated deployments, configure the following in your GitHub repository (**Settings > Secrets and variables > Actions**):
+
+| Type | Name | Description | Source |
+|------|------|-------------|--------|
+| **Secret** | `AWS_ROLE_ARN` | IAM Role ARN for GitHub Actions | Output `github_actions_role_arn` from Terraform |
+| **Secret** | `DB_USERNAME` | Master database username | e.g. `school_admin` |
+| **Secret** | `DB_PASSWORD` | Master database password | Strong password |
+| **Variable** | `AWS_REGION` *(optional)* | Target AWS region (default: `eu-west-1`) | `eu-west-1` |
+
 
 ---
 

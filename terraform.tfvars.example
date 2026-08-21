@@ -9,5 +9,8 @@ app_image = "123456789012.dkr.ecr.eu-west-1.amazonaws.com/school-result-portal:l
 db_username = "school_admin"
 db_password = "ChangeThisToStrongPassword123!"
 
+# GitHub repository for OIDC CI/CD deployment
+github_repo = "sensi012/School-Result-Portal"
+
 # Optional: custom domain
-# domain_name = "results.yourschool.edu.ng"
+# domain_name = "results.yourschool.edu.ng"

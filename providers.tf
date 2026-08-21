@@ -14,7 +14,7 @@ provider "aws" {
 
   default_tags {
     tags = {
-      Project     = "school-result-portal"
+      Project     = var.project_name
       Environment = var.environment
       ManagedBy   = "terraform"
       Owner       = "school-ict-team"
