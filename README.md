@@ -279,9 +279,11 @@ project_name = "school-result-portal"
 app_image    = "210450948229.dkr.ecr.eu-west-1.amazonaws.com/school-result-portal:latest"
 db_username  = "school_admin"
 db_password  = "SChoolPortalPassword123!"
+github_repo  = "sensi012/School-Result-Portal"
+secret_key   = "your-secret-key-here"
 ```
 
-> ⚠️ **Never commit `terraform.tfvars` to Git.** Use `.gitignore` and store secrets securely.
+> ⚠️ **Never commit `terraform.tfvars` to Git.** Use `.gitignore` and refer to `terraform.tfvars.example`.
 
 ---
 
@@ -380,7 +382,9 @@ school-result-portal/
 │   ├── variable.tf                       # Input variable declarations
 │   ├── output.tf                         # Output values
 │   ├── main.tf                           # Root module composition
-│   ├── terraform.tfvars                  # Variables override for deployment
+│   ├── terraform.tfvars.example          # Sample variables template
+│   ├── backend.sh                        # One-time S3 backend setup script
+│   ├── docker.sh                         # ECR build & push script
 │   │
 │   └── module/                           # Reusable infrastructure modules
 │       ├── vpc/                          # Network (VPC, subnets, IGW, NAT)
@@ -433,7 +437,7 @@ The workflow (`.github/workflows/deploy.yml`) uses passwordless **AWS OpenID Con
 To enable automated deployments, configure the following in your GitHub repository (**Settings > Secrets and variables > Actions**):
 
 | Type | Name | Description | Source |
-|------|------|-------------|--------|
+|---|---|---|---|
 | **Secret** | `AWS_ROLE_ARN` | IAM Role ARN for GitHub Actions | Output `github_actions_role_arn` from Terraform |
 | **Secret** | `DB_USERNAME` | Master database username | e.g. `school_admin` |
 | **Secret** | `DB_PASSWORD` | Master database password | Strong password |
@@ -465,9 +469,9 @@ Configure SNS + CloudWatch Alarms for:
 ## 🐛 Troubleshooting
 
 | Symptom | Cause | Solution |
-|---------|-------|----------|
-| `docker login` fails | ECR auth token expired | Re-run `aws ecr get-login-password ...` |
-| `terraform plan` hangs | State lock in DynamoDB | Run `terraform force-unlock <LOCK_ID>` |
+|---|---|---|
+| `docker login` fails | ECR auth token expired | Re-run `aws ecr get-login-password ...` or use `docker.sh` |
+| `terraform plan` hangs / lock error | S3 state lock held | Run `terraform force-unlock <LOCK_ID>` |
 | `Cannot connect to DB` | Security group blocking | Verify ECS security group is in RDS ingress rules |
 | `Access Denied for S3 bucket` | Wrong ELB account ID | Use region-specific ELB account ID (`156460612806` for eu-west-1) |
 | `InvalidParameterCombination` for RDS | Deprecated engine version | Check valid versions with `aws rds describe-db-engine-versions` |
